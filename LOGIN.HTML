@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Travel Planner — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  min-height: 100vh;
+  background: #f5f0e8;
+  display: flex;
+}
+ 
+ 
+ 
+/* right side — form */
+.right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: #f5f0e8;
+  min-height: 100vh;
+}
+ 
+.form-box {
+  width: 100%;
+  max-width: 380px;
+}
+ 
+.site-name {
+  font-family: 'Bitter', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a2e28;
+  margin-bottom: 4px;
+}
+.site-name span { color: #c17f3b; }
+.site-tagline {
+  font-size: 13px;
+  color: #8a7e6e;
+  margin-bottom: 32px;
+}
+ 
+/* tabs */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #e0d8cc;
+  margin-bottom: 28px;
+  gap: 0;
+}
+.tab {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a09080;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.tab.active {
+  color: #2c4a3e;
+  border-bottom-color: #2c4a3e;
+}
+ 
+.form-section { display: none; }
+.form-section.active { display: block; }
+ 
+.form-heading {
+  font-family: 'Bitter', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1a2e28;
+  margin-bottom: 4px;
+}
+.form-sub { font-size: 13px; color: #8a7e6e; margin-bottom: 22px; line-height: 1.5; }
+ 
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a3f30;
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid #d4c9b8;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Source Sans 3', sans-serif;
+  color: #1a2e28;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: #2c4a3e; }
+.field input::placeholder { color: #c0b8ac; }
+ 
+.radio-row { display: flex; gap: 8px; }
+.radio-opt {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+  padding: 9px 10px; border: 1.5px solid #d4c9b8;
+  border-radius: 6px; cursor: pointer; font-size: 13px;
+  font-weight: 500; color: #5a4e3e; background: #fff;
+  transition: all 0.18s; font-family: 'Source Sans 3', sans-serif;
+}
+.radio-opt input { accent-color: #2c4a3e; }
+.radio-opt:has(input:checked) { border-color: #2c4a3e; background: #eef4f1; color: #2c4a3e; }
+ 
+.btn-submit {
+  width: 100%;
+  padding: 11px;
+  background: #2c4a3e;
+  color: #fff;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s;
+  letter-spacing: 0.01em;
+}
+.btn-submit:hover { background: #1a2e28; }
+.btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+ 
+.switch-line {
+  text-align: center;
+  font-size: 13px;
+  color: #8a7e6e;
+  margin-top: 16px;
+}
+.switch-line a { color: #c17f3b; font-weight: 600; cursor: pointer; text-decoration: none; }
+.switch-line a:hover { text-decoration: underline; }
+ 
+.msg {
+  padding: 10px 13px; border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  margin-bottom: 14px; display: none;
+}
+.msg.error { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6c6; display: block; }
+.msg.success { background: #f0faf4; color: #1e6b3e; border: 1px solid #b8e6cc; display: block; }
+ 
+@media(max-width: 480px) { .form-box { padding: 0 4px; } }
+</style>
+</head>
+<body>
+ 
+<!-- FORM PANEL -->
+<div class="right">
+  <div class="form-box">
+ 
+    <div class="site-name">AI Travel<span> Planner</span></div>
+    <div class="site-tagline">Your personal India trip assistant</div>
+ 
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+ 
+    <div id="msg" class="msg"></div>
+ 
+    <!-- LOGIN -->
+    <div class="form-section active" id="sec-login">
+      <div class="form-heading">Welcome back</div>
+      <div class="form-sub">Login to see your saved trips and plan new ones.</div>
+ 
+      <div class="field">
+        <label>Email address</label>
+        <input id="l-email" type="email" placeholder="yourname@gmail.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="l-pass" type="password" placeholder="Your password"/>
+      </div>
+      <button class="btn-submit" onclick="doLogin()">Login to my account</button>
+      <div class="switch-line">New here? <a onclick="switchTab('signup')">Create a free account</a></div>
+    </div>
+ 
+    <!-- SIGNUP -->
+    <div class="form-section" id="sec-signup">
+      <div class="form-heading">Create account</div>
+      <div class="form-sub">Join and start planning budget-smart trips across India.</div>
+ 
+      <div class="field">
+        <label>Full name</label>
+        <input id="s-name" type="text" placeholder="Rahul Sharma"/>
+      </div>
+      <div class="field">
+        <label>Email address</label>
+        <input id="s-email" type="email" placeholder="yourname@gmail.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="s-pass" type="password" placeholder="At least 8 characters"/>
+      </div>
+      <div class="field">
+        <label>Phone number <span style="color:#a09080;font-weight:400">(optional)</span></label>
+        <input id="s-phone" type="tel" placeholder="9876543210"/>
+      </div>
+      <div class="field">
+        <label>Gender</label>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="gender" value="male"/> Male</label>
+          <label class="radio-opt"><input type="radio" name="gender" value="female"/> Female</label>
+          <label class="radio-opt"><input type="radio" name="gender" value="other"/> Other</label>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="doSignup()">Create my account</button>
+      <div class="switch-line">Already have one? <a onclick="switchTab('login')">Login here</a></div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<script>
+const API = 'http://127.0.0.1:5000/api';
+ 
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((el, i) =>
+    el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='signup'))
+  );
+  document.getElementById('sec-login').classList.toggle('active', t==='login');
+  document.getElementById('sec-signup').classList.toggle('active', t==='signup');
+  showMsg('','');
+}
+ 
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg' + (type ? ' '+type : '');
+}
+ 
+async function doLogin() {
+  const email    = document.getElementById('l-email').value.trim();
+  const password = document.getElementById('l-pass').value;
+  if (!email || !password) return showMsg('Please enter email and password.', 'error');
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Logging in...';
+  try {
+    const res  = await fetch(`${API}/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showMsg('Login successful! Taking you in...', 'success');
+      setTimeout(() => window.location.href = 'planner.html', 700);
+    } else { showMsg(data.error, 'error'); }
+  } catch(e) { showMsg('Cannot reach server. Is it running?', 'error'); }
+  btn.disabled = false; btn.textContent = 'Login to my account';
+}
+ 
+async function doSignup() {
+  const name     = document.getElementById('s-name').value.trim();
+  const email    = document.getElementById('s-email').value.trim();
+  const password = document.getElementById('s-pass').value;
+  const phone    = document.getElementById('s-phone').value.trim();
+  const gender   = document.querySelector('input[name="gender"]:checked')?.value || '';
+  if (!name || !email || !password) return showMsg('Name, email and password are required.', 'error');
+  if (password.length < 8) return showMsg('Password must be at least 8 characters.', 'error');
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    const res  = await fetch(`${API}/auth/signup`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, email, password, phone, gender})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showMsg('Account created! Redirecting...', 'success');
+      setTimeout(() => window.location.href = 'planner.html', 700);
+    } else { showMsg(data.error, 'error'); }
+  } catch(e) { showMsg('Cannot reach server. Is it running?', 'error'); }
+  btn.disabled = false; btn.textContent = 'Create my account';
+}
+</script>
+</body>
+</html>

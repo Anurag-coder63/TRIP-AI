@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Travel Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: #f5f0e8;
+  min-height: 100vh;
+  color: #2a2016;
+}
+ 
+/* NAV */
+nav {
+  background: #fff;
+  border-bottom: 1px solid #e0d8cc;
+  padding: 13px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo {
+  font-family: 'Bitter', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a2e28;
+}
+.nav-logo span { color: #c17f3b; }
+.nav-right { display: flex; align-items: center; gap: 14px; }
+.nav-user { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #5a4e3e; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #2c4a3e; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.btn-logout {
+  font-size: 13px; color: #8a7e6e;
+  background: none; border: 1px solid #d4c9b8;
+  border-radius: 5px; padding: 5px 11px;
+  cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+  transition: all 0.2s;
+}
+.btn-logout:hover { color: #c0392b; border-color: #f5c6c6; }
+ 
+/* PAGE HEADER */
+.page-header {
+  background: #2c4a3e;
+  padding: 22px 32px;
+  color: #fff;
+}
+.page-header h1 {
+  font-family: 'Bitter', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 3px;
+}
+.page-header p { font-size: 13px; color: rgba(255,255,255,0.55); }
+ 
+/* LAYOUT */
+.layout {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+ 
+/* FORM PANEL */
+.form-panel {
+  background: #fff;
+  border: 1px solid #e0d8cc;
+  border-radius: 10px;
+  overflow: hidden;
+  position: sticky;
+  top: 62px;
+}
+.panel-title {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e0d8cc;
+  font-family: 'Bitter', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a2e28;
+  background: #faf8f4;
+}
+.panel-body { padding: 18px; }
+ 
+.field { margin-bottom: 14px; position: relative; }
+.field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b5e4e;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field input, .field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #d4c9b8;
+  border-radius: 5px;
+  font-size: 13.5px;
+  font-family: 'Source Sans 3', sans-serif;
+  color: #2a2016;
+  background: #faf8f4;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+.field input:focus, .field select:focus {
+  border-color: #2c4a3e;
+  background: #fff;
+}
+.field input::placeholder { color: #b8b0a4; }
+ 
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+ 
+/* suggestions */
+.suggestions {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+  background: #fff; border: 1px solid #2c4a3e; border-top: none;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  max-height: 170px; overflow-y: auto; display: none;
+}
+.suggestions.show { display: block; }
+.sug-item {
+  padding: 8px 11px; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  color: #3a2e1e; transition: background 0.12s;
+  font-family: 'Source Sans 3', sans-serif;
+  border-bottom: 1px solid #f0ebe3;
+}
+.sug-item:last-child { border-bottom: none; }
+.sug-item:hover { background: #eef4f1; color: #2c4a3e; }
+ 
+.btn-generate {
+  width: 100%;
+  padding: 11px;
+  background: #2c4a3e;
+  color: #fff;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: 0.01em;
+}
+.btn-generate:hover { background: #1a2e28; }
+.btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+ 
+/* past trips */
+.past-trips { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e0d8cc; }
+.past-label {
+  font-size: 11.5px; font-weight: 600; color: #8a7e6e;
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+}
+.trip-row {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 8px 10px; border-radius: 6px;
+  background: #faf8f4; border: 1px solid #e8e0d4;
+  margin-bottom: 7px; font-size: 13px;
+}
+.trip-route { font-weight: 600; color: #1a2e28; font-size: 13px; }
+.trip-meta { font-size: 11.5px; color: #a09080; margin-top: 1px; }
+ 
+/* RIGHT: results area */
+.results-area { display: flex; flex-direction: column; gap: 14px; }
+ 
+.welcome-box {
+  background: #fff;
+  border: 1px solid #e0d8cc;
+  border-radius: 10px;
+  padding: 24px 26px;
+}
+.welcome-box h2 {
+  font-family: 'Bitter', serif;
+  font-size: 1.25rem; font-weight: 700;
+  color: #1a2e28; margin-bottom: 8px;
+}
+.welcome-box p { font-size: 14px; color: #6b5e4e; line-height: 1.65; }
+.feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.ftag {
+  background: #eef4f1; color: #2c4a3e;
+  border: 1px solid #c4dbd4;
+  border-radius: 4px; padding: 4px 11px;
+  font-size: 12px; font-weight: 600;
+}
+ 
+/* result bubble */
+.result-bubble {
+  background: #fff;
+  border: 1px solid #e0d8cc;
+  border-radius: 10px;
+  padding: 22px 26px;
+  font-size: 14px;
+  color: #3a2e1e;
+  line-height: 1.75;
+  border-left: 3px solid #2c4a3e;
+  animation: fadeUp 0.3s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+ 
+.result-bubble h3 {
+  font-family: 'Bitter', serif;
+  font-size: 1rem; font-weight: 700;
+  color: #1a2e28; margin: 18px 0 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #e8e0d4;
+}
+.result-bubble h3:first-child { margin-top: 0; }
+.result-bubble strong { color: #1a2e28; }
+.result-bubble p { margin-bottom: 8px; }
+.result-bubble ul { list-style: none; padding: 0; }
+.result-bubble ul li {
+  padding: 6px 0 6px 15px; position: relative;
+  border-bottom: 1px solid #f5f0e8; font-size: 13.5px;
+}
+.result-bubble ul li:last-child { border-bottom: none; }
+.result-bubble ul li::before { content: "–"; position: absolute; left: 0; color: #c17f3b; font-weight: 700; }
+.result-bubble a {
+  color: #2c4a3e; font-weight: 600;
+  background: #eef4f1; border: 1px solid #c4dbd4;
+  padding: 2px 9px; border-radius: 4px;
+  text-decoration: none; font-size: 13px; display: inline-flex;
+  align-items: center; gap: 3px; transition: background 0.15s;
+}
+.result-bubble a:hover { background: #dceee8; }
+.price { background: #fef9ec; color: #8a5a1a; border: 1px solid #f0dba0; border-radius: 4px; padding: 1px 7px; font-size: 12.5px; font-weight: 600; display: inline-block; }
+ 
+.loading-row {
+  background: #fff; border: 1px solid #e0d8cc; border-radius: 10px;
+  padding: 18px 22px; display: flex; align-items: center; gap: 14px;
+  font-size: 13.5px; color: #8a7e6e; font-weight: 500;
+  border-left: 3px solid #e0d8cc;
+}
+.dots span {
+  display: inline-block; width: 7px; height: 7px;
+  background: #2c4a3e; border-radius: 50%;
+  animation: blink 1.2s infinite; margin-right: 3px;
+}
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.25;transform:scale(0.9);} 40%{opacity:1;transform:scale(1.1);} }
+ 
+@media(max-width:720px) {
+  .layout { grid-template-columns:1fr; }
+  .form-panel { position:static; }
+  .page-header { padding:18px 20px; }
+}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-logo">AI Travel<span> Planner</span></div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="avatar" id="navAvatar">?</div>
+      <span id="navName">User</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+ 
+<div class="page-header">
+  <h1>Plan a new trip</h1>
+  <p>Enter your details below and get transport, hotels and a day-by-day itinerary instantly.</p>
+</div>
+ 
+<div class="layout">
+ 
+  <!-- FORM PANEL -->
+  <div class="form-panel">
+    <div class="panel-title">Trip details</div>
+    <div class="panel-body">
+ 
+      <div class="field">
+        <label>Travelling from</label>
+        <input id="f-from" type="text" placeholder="e.g. Lucknow" autocomplete="off"
+          oninput="showSug('f-from','sg-from')"
+          onblur="hideSug('sg-from')"
+          onfocus="showSug('f-from','sg-from')"/>
+        <div class="suggestions" id="sg-from"></div>
+      </div>
+ 
+      <div class="field">
+        <label>Destination</label>
+        <input id="f-to" type="text" placeholder="e.g. Mathura, Goa, Shimla" autocomplete="off"
+          oninput="showSug('f-to','sg-to')"
+          onblur="hideSug('sg-to')"
+          onfocus="showSug('f-to','sg-to')"/>
+        <div class="suggestions" id="sg-to"></div>
+      </div>
+ 
+      <div class="field-row">
+        <div class="field">
+          <label>Budget (₹)</label>
+          <input id="f-budget" type="number" placeholder="10000" min="500"/>
+        </div>
+        <div class="field">
+          <label>No. of days</label>
+          <input id="f-days" type="number" placeholder="5" min="1" max="30"/>
+        </div>
+      </div>
+ 
+      <div class="field-row">
+        <div class="field">
+          <label>People</label>
+          <input id="f-people" type="number" placeholder="1" min="1"/>
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <select id="f-type">
+            <option value="budget">Budget</option>
+            <option value="comfort">Comfort</option>
+            <option value="luxury">Luxury</option>
+            <option value="spiritual">Spiritual</option>
+            <option value="adventure">Adventure</option>
+          </select>
+        </div>
+      </div>
+ 
+      <div class="field">
+        <label>Any preferences?</label>
+        <input id="f-pref" type="text" placeholder="vegetarian, temples, no flights..."/>
+      </div>
+ 
+      <button class="btn-generate" onclick="planTrip()">
+        <span class="spinner" id="btnSpinner"></span>
+        <span id="btnText">Get my trip plan →</span>
+      </button>
+ 
+      <div class="past-trips">
+        <div class="past-label">Previous trips</div>
+        <div id="pastTrips"><div style="font-size:13px;color:#a09080;">Loading...</div></div>
+      </div>
+ 
+    </div>
+  </div>
+ 
+  <!-- RESULTS -->
+  <div class="results-area" id="resultsArea">
+    <div class="welcome-box">
+      <h2>Hello, <span id="welcomeName">there</span> 👋</h2>
+      <p>Fill in your trip details on the left and I'll put together a complete plan — how to get there, where to stay, and what to do each day.</p>
+      <div class="feature-tags">
+        <span class="ftag">Transport options</span>
+        <span class="ftag">Hotel suggestions</span>
+        <span class="ftag">Day-by-day plan</span>
+        <span class="ftag">Booking links</span>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<script>
+const API = 'http://127.0.0.1:5000/api';
+let user = null;
+ 
+const CITIES = [
+  'Agra, India','Ahmedabad, India','Ajmer, India','Allahabad, India',
+  'Amritsar, India','Aurangabad, India','Ayodhya, India',
+  'Bangalore, India','Bhopal, India','Bhubaneswar, India',
+  'Chandigarh, India','Chennai, India','Coimbatore, India',
+  'Darjeeling, India','Dehradun, India','Delhi, India',
+  'Dwarka, India','Goa, India','Guwahati, India',
+  'Haridwar, India','Hyderabad, India','Indore, India',
+  'Jaipur, India','Jammu, India','Jodhpur, India',
+  'Kanpur, India','Kochi, India','Kolkata, India',
+  'Leh, India','Lucknow, India','Ludhiana, India',
+  'Madurai, India','Manali, India','Mathura, India',
+  'Mumbai, India','Munnar, India','Mysore, India',
+  'Nagpur, India','Nainital, India','Nashik, India',
+  'Noida, India','Ooty, India','Patna, India',
+  'Prayagraj, India','Pune, India','Puri, India',
+  'Pushkar, India','Rishikesh, India','Shimla, India',
+  'Shillong, India','Srinagar, India','Surat, India',
+  'Tirupati, India','Udaipur, India','Vadodara, India',
+  'Varanasi, India','Vijayawada, India','Visakhapatnam, India',
+  'Vrindavan, India'
+];
+ 
+const FLAGS = {
+  'Delhi':'🏛️','Mumbai':'🌊','Goa':'🏖️','Jaipur':'🏰',
+  'Manali':'🏔️','Shimla':'❄️','Varanasi':'🛕','Agra':'🕌',
+  'Kolkata':'🌆','Chennai':'🌴','Hyderabad':'🍖','Bangalore':'🌿',
+  'Kochi':'⛵','Rishikesh':'🧘','Haridwar':'🪔','Mathura':'🙏',
+  'Vrindavan':'🌺','Ayodhya':'🛕','Lucknow':'🏛️','Udaipur':'🏯',
+  'Ooty':'🌿','Munnar':'🍵','Darjeeling':'☕','Leh':'🏔️',
+  'Pushkar':'🐪','Srinagar':'🌷','Amritsar':'✨','Puri':'🌊'
+};
+ 
+function showSug(inputId, sugId) {
+  const val = document.getElementById(inputId).value.toLowerCase().trim();
+  const sug = document.getElementById(sugId);
+  if (val.length < 1) { sug.classList.remove('show'); return; }
+  const matches = CITIES.filter(c => c.toLowerCase().includes(val)).slice(0,6);
+  if (!matches.length) { sug.classList.remove('show'); return; }
+  sug.innerHTML = matches.map(city => {
+    const name = city.split(',')[0];
+    const flag = FLAGS[name] || '📍';
+    return `<div class="sug-item" onmousedown="pickCity('${inputId}','${sugId}','${city}')">
+      <span>${flag}</span> ${city}
+    </div>`;
+  }).join('');
+  sug.classList.add('show');
+}
+ 
+function hideSug(sugId) {
+  setTimeout(() => document.getElementById(sugId).classList.remove('show'), 180);
+}
+ 
+function pickCity(inputId, sugId, city) {
+  document.getElementById(inputId).value = city;
+  document.getElementById(sugId).classList.remove('show');
+}
+ 
+window.onload = function() {
+  const s = localStorage.getItem('user');
+  if (!s) { window.location.href = 'login.html'; return; }
+  user = JSON.parse(s);
+  document.getElementById('navName').textContent = user.name.split(' ')[0];
+  document.getElementById('navAvatar').textContent = user.name[0].toUpperCase();
+  document.getElementById('welcomeName').textContent = user.name.split(' ')[0];
+  loadPastTrips();
+};
+ 
+function logout() {
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+ 
+async function loadPastTrips() {
+  try {
+    const res = await fetch(`${API}/trips/${user.user_id}`);
+    const trips = await res.json();
+    const el = document.getElementById('pastTrips');
+    if (!trips.length) { el.innerHTML = '<div style="font-size:13px;color:#a09080;">No trips yet — plan your first one!</div>'; return; }
+    el.innerHTML = trips.slice(0,4).map(t => `
+      <div class="trip-row">
+        <span>✈️</span>
+        <div>
+          <div class="trip-route">${t.departure} → ${t.destination}</div>
+          <div class="trip-meta">₹${Number(t.budget).toLocaleString('en-IN')} · ${t.duration_days} days · ${t.trip_type}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('pastTrips').innerHTML = '<div style="font-size:13px;color:#a09080;">Could not load.</div>';
+  }
+}
+ 
+async function planTrip() {
+  const from   = document.getElementById('f-from').value.trim();
+  const to     = document.getElementById('f-to').value.trim();
+  const budget = document.getElementById('f-budget').value;
+  const days   = document.getElementById('f-days').value;
+  const people = document.getElementById('f-people').value || '1';
+  const type   = document.getElementById('f-type').value;
+  const pref   = document.getElementById('f-pref').value.trim();
+ 
+  if (!from || !to || !budget || !days) {
+    addBubble('<p>⚠️ Please fill in the From, To, Budget and Days fields.</p>', true);
+    return;
+  }
+ 
+  const btn = document.querySelector('.btn-generate');
+  btn.disabled = true;
+  document.getElementById('btnSpinner').style.display = 'block';
+  document.getElementById('btnText').textContent = 'Working on your plan...';
+  addLoading(to);
+ 
+  try {
+    if (user) {
+      await fetch(`${API}/trips`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          user_id: user.user_id, departure: from, destination: to,
+          budget: parseInt(budget), group_size: parseInt(people),
+          duration_days: parseInt(days), trip_type: type
+        })
+      });
+      loadPastTrips();
+    }
+ 
+    const res  = await fetch(`${API}/ai`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ from, to, budget:parseInt(budget), days:parseInt(days), people:parseInt(people), type, preferences:pref })
+    });
+    const data = await res.json();
+    removeLoading();
+ 
+    if (data.error) addBubble(`<p>⚠️ ${data.error}</p>`, true);
+    else addBubble(formatText(data.text), false);
+ 
+  } catch(e) {
+    removeLoading();
+    addBubble('<p>⚠️ Could not connect to server. Make sure <strong>npm run dev</strong> is running.</p>', true);
+  }
+ 
+  btn.disabled = false;
+  document.getElementById('btnSpinner').style.display = 'none';
+  document.getElementById('btnText').textContent = 'Get my trip plan →';
+}
+ 
+function addLoading(to) {
+  removeLoading();
+  const el = document.createElement('div');
+  el.className = 'loading-row'; el.id = 'loadRow';
+  el.innerHTML = `<div class="dots"><span></span><span></span><span></span></div> Building your plan for <strong style="margin-left:3px">${to}</strong>...`;
+  document.getElementById('resultsArea').appendChild(el);
+  el.scrollIntoView({behavior:'smooth', block:'end'});
+}
+ 
+function removeLoading() {
+  const el = document.getElementById('loadRow');
+  if (el) el.remove();
+}
+ 
+function addBubble(html, isError) {
+  const el = document.createElement('div');
+  el.className = 'result-bubble';
+  if (isError) el.style.borderLeftColor = '#e74c3c';
+  el.innerHTML = html;
+  document.getElementById('resultsArea').appendChild(el);
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+ 
+function formatText(text) {
+  if (!text) return '<p>No response received.</p>';
+  return text
+    .replace(/###\s*(.+)/g, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1 ↗</a>')
+    .replace(/(₹[\d,]+(?:\s*[-–]\s*₹[\d,]+)?(?:\s*(?:per night|\/night|per person))?)/g, '<span class="price">$1</span>')
+    .replace(/^\*\s+(.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)+/g, m => '<ul>' + m + '</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br/>')
+    .replace(/^/, '<p>').replace(/$/, '</p>');
+}
+</script>
+</body>
+</html>
+ 
